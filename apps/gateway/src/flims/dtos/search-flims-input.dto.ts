@@ -1,7 +1,7 @@
 import { Type } from "class-transformer";
 import { IsArray, IsNumber, IsOptional, IsString } from "class-validator";
 
-export class SearchInput {
+export class SearchFlimsInput {
   @IsOptional()
   @IsString()
   title?: string;
