@@ -1,12 +1,14 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { catchError, concatMap, defaultIfEmpty, map, tap, throwError } from "rxjs";
 import { Service } from "../shared/available.services";
+import { JwtAuthGuard } from "../shared/guards/jwt-auth.guard";
 import { AddFlimDto, UpdateFlimDto } from "./dtos/flim.dto";
 import { SearchFlimsInput } from "./dtos/search-flims-input.dto";
 import { ErrorCodes } from "./error.codes";
 
 @Controller('flims')
+@UseGuards(JwtAuthGuard)
 export class FlimsController {
 
   constructor(@Inject(Service.Flims) private readonly flimsService: ClientProxy) {}

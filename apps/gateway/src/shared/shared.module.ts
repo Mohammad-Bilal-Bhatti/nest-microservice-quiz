@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { Service } from "./available.services";
+import { JwtStrategy } from "./strategies/jwt-strategy";
 
 @Module({
   imports: [
@@ -23,8 +24,8 @@ import { Service } from "./available.services";
       },
     ]),
   ],
-  providers: [],
+  providers: [JwtStrategy],
   controllers: [],
-  exports: [ClientsModule]
+  exports: [ClientsModule, JwtStrategy]
 })
 export class SharedModule {}
