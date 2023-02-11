@@ -16,6 +16,8 @@ export class UsersController {
     return this.userService.send('user::register', input).pipe(
       catchError( error => {
         console.log('error is encountered: ', error);
+        if (error.code === ErrorCodes.Email_Already_Registered)
+          throw new HttpException(error.message, HttpStatus.PRECONDITION_FAILED);
         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       })
     );
