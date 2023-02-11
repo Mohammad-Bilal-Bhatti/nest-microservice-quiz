@@ -11,7 +11,7 @@ export enum TokenType {
 export class TokenService {
   constructor(private jwtService: JwtService) {}
 
-  issueToken(user: IUser): { accessToken: string, refreshToken: string } {
+  issueToken(user: IUser): { accessToken: string } {
 
     const accessToken = this.jwtService.sign({
       user_id: user.id,
@@ -20,21 +20,11 @@ export class TokenService {
       age: user.age,
       type: TokenType.Access
     }, {
-      expiresIn: '1h',
       issuer: '@user.service',
       subject: user.email,
     });
 
-    const refreshToken = this.jwtService.sign({
-      user_id: user.id,
-      type: TokenType.Refresh
-    }, {
-      expiresIn: '30d',
-      issuer: '@user.service',
-      subject: user.email,
-    });
-
-    return { accessToken, refreshToken };
+    return { accessToken };
   }
 
   isValidToken(token: string) {

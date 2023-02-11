@@ -5,22 +5,45 @@ import { JwtModule } from '@nestjs/jwt';
 import { TokenService } from './token.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { configuration, validationSchema } from './configuration/configuration';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'jwt-secret', /* TODO: use config service here */
-      signOptions: { expiresIn: '1d' }, /* default expiary of issued token */
+    ConfigModule.forRoot({
+      envFilePath: 'apps/users-service/.env',
+      load: [configuration],
+      validationSchema: validationSchema,
+      isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'root',
-      database: 'users_db',
-      entities: [User],
-      synchronize: true,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return {
+          secret: configService.get<string>('jwt.secret'),
+          signOptions: { 
+            expiresIn: configService.get<string>('jwt.expiary') 
+          },
+        };
+      }
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return {
+          type: configService.get<'mysql'|'mssql'|'postgres'>('database.type'),
+          host: configService.get<string>('database.host'),
+          port: configService.get<number>('database.port'),
+          username: configService.get<string>('database.user'),
+          password: configService.get<string>('database.pass'),
+          database: configService.get<string>('database.name'),
+          entities: [User],
+          synchronize: true,
+        };
+      }
+
     }),
     TypeOrmModule.forFeature([User])
   ],
