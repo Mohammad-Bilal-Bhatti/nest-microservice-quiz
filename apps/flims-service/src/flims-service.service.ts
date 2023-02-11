@@ -1,37 +1,85 @@
 import { Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsWhere, Like, Repository } from 'typeorm';
+import { Flim } from './entities/flim.entity';
 import { IFlim } from './interfaces/flim';
 import { IFlimsSearch } from './interfaces/search';
 
 @Injectable()
 export class FlimsServiceService {
-  create(input: IFlim) {
+
+  constructor(
+    @InjectRepository(Flim)
+    private flimsRepository: Repository<Flim>,
+  ) {}
+
+  async create(input: IFlim) {
     console.log(`[${FlimsServiceService.name}] ${this.create.name} was called with: ${JSON.stringify(input)}`);
-    return { message: 'flim created successfully', id: 123 };
+
+    const titleAlreadyExists = await this.flimsRepository.findOneBy({
+      title: input.title,
+    });
+
+    if (titleAlreadyExists) {
+      throw new RpcException({ message: 'flim already registered with given title', code: 'Flim_001' });
+    }
+
+    const flim = new Flim();
+    Object.assign(flim, input);
+
+    await this.flimsRepository.save(flim);
+
+    return { message: 'flim created successfully', flim }; 
   }
 
-  update(input: IFlim) {
+  async update(input: IFlim) {
     console.log(`[${FlimsServiceService.name}] ${this.update.name} was called with: ${JSON.stringify(input)}`);
-    return { message: 'flim updated successfully', id: 123 };
+    const flim = await this.flimsRepository.findOneBy({ id: input.id });
+
+    /* if different title is provided - check: that title already registered! */
+    const titleAlreadyExists =  flim.title !== input.title ? await this.flimsRepository.findOneBy({ title: input.title }) : null
+
+    if (titleAlreadyExists) {
+      throw new RpcException({ message: 'flim already registered with given title', code: 'Flim_001' });
+    }
+
+    Object.assign(flim, input);
+    await this.flimsRepository.save(flim);
+    return { message: 'flim updated successfully', flim };
   }
 
-  delete(input: IFlim) {
+  async delete(input: IFlim) {
     console.log(`[${FlimsServiceService.name}] ${this.delete.name} was called with: ${JSON.stringify(input)}`);
-    return { message: 'flim delete successfully', id: 123 };
+    const flim = await this.flimsRepository.findOneBy({ id: input.id });
+    await this.flimsRepository.remove(flim);
+    return { message: 'flim delete successfully', flim };
   }
 
-  search(input: IFlimsSearch) {
+  async search(input: IFlimsSearch) {
     console.log(`[${FlimsServiceService.name}] ${this.search.name} was called with: ${JSON.stringify(input)}`);
-    return { flims: [1, 2, 3] };
+
+    const where: FindOptionsWhere<Flim> = {};
+
+    if (input.title) where.title = input.title;
+    if (input.director) where.director = input.director;
+    if (input.release_year) where.release_year = input.release_year;
+    if (input.actors) where.actors = Like(`%${input.actors.join('%')}%`);
+
+    const [ flims, count ] = await this.flimsRepository.findAndCount({ where });
+    return { flims, count };
   }
 
-  findByTitle(title: string) {
+  async findByTitle(title: string) {
     console.log(`[${FlimsServiceService.name}] ${this.findByTitle.name} was called with: ${title}`);
-    return { flim: 1 };
+    const flim = await this.flimsRepository.findOneBy({ title });
+    if (!flim) return null;
+    return { flim };
   }
 
-  findAll() {
+  async findAll() {
     console.log(`[${FlimsServiceService.name}] ${this.findAll.name} was called`);
-    return { flims: [1, 2, 3] };
+    const [ flims, count ] = await this.flimsRepository.findAndCount();
+    return { flims, count };
   }
-
 }

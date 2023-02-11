@@ -1,5 +1,5 @@
-import { Type } from "class-transformer";
-import { IsArray, IsNumber, IsOptional, IsString } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsArray, IsNumber, IsNumberString, IsOptional, IsString } from "class-validator";
 
 export class SearchFlimsInput {
   @IsOptional()
@@ -12,10 +12,12 @@ export class SearchFlimsInput {
 
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => parseInt(value))
   release_year?: number;
 
   @IsOptional()
   @IsArray()
+  @Transform(({ value }) => value.split(','))
   @Type(() => String)
   actors?: string[];
 }
