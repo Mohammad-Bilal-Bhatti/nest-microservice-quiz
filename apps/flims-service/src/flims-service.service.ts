@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Like, Repository } from 'typeorm';
@@ -9,13 +9,17 @@ import { IFlimsSearch } from './interfaces/search';
 @Injectable()
 export class FlimsServiceService {
 
+  private logger = new Logger(FlimsServiceService.name);
+
   constructor(
     @InjectRepository(Flim)
     private flimsRepository: Repository<Flim>,
-  ) {}
+  ) {
+    this.logger.log('initilized');
+  }
 
   async create(input: IFlim) {
-    console.log(`[${FlimsServiceService.name}] ${this.create.name} was called with: ${JSON.stringify(input)}`);
+    this.logger.log(`[${FlimsServiceService.name}] ${this.create.name} was called with: ${JSON.stringify(input)}`);
 
     const titleAlreadyExists = await this.flimsRepository.findOneBy({
       title: input.title,
@@ -28,13 +32,14 @@ export class FlimsServiceService {
     const flim = new Flim();
     Object.assign(flim, input);
 
+    this.logger.log('calling FlimsRepository.save');
     await this.flimsRepository.save(flim);
 
     return { message: 'flim created successfully', flim }; 
   }
 
   async update(input: IFlim) {
-    console.log(`[${FlimsServiceService.name}] ${this.update.name} was called with: ${JSON.stringify(input)}`);
+    this.logger.log(`[${FlimsServiceService.name}] ${this.update.name} was called`);
     const flim = await this.flimsRepository.findOneBy({ id: input.id });
 
     /* if different title is provided - check: that title already registered! */
@@ -45,19 +50,31 @@ export class FlimsServiceService {
     }
 
     Object.assign(flim, input);
+
+    this.logger.log('calling FlimsRepository.save');
     await this.flimsRepository.save(flim);
+
     return { message: 'flim updated successfully', flim };
   }
 
   async delete(input: IFlim) {
-    console.log(`[${FlimsServiceService.name}] ${this.delete.name} was called with: ${JSON.stringify(input)}`);
+    this.logger.log(`[${FlimsServiceService.name}] ${this.delete.name} was called`);
+
+    this.logger.log('calling FlimsRepository.findOneBy');
     const flim = await this.flimsRepository.findOneBy({ id: input.id });
+
+    if (!flim) {
+      throw new RpcException({ error: 'flim not found!', code: 'Flim_002' })
+    }
+
+    this.logger.log('calling FlimsRepository.remove');
     await this.flimsRepository.remove(flim);
+
     return { message: 'flim delete successfully', flim };
   }
 
   async search(input: IFlimsSearch) {
-    console.log(`[${FlimsServiceService.name}] ${this.search.name} was called with: ${JSON.stringify(input)}`);
+    this.logger.log(`[${FlimsServiceService.name}] ${this.search.name} was called`);
 
     const where: FindOptionsWhere<Flim> = {};
 
@@ -66,19 +83,24 @@ export class FlimsServiceService {
     if (input.release_year) where.release_year = input.release_year;
     if (input.actors) where.actors = Like(`%${input.actors.join('%')}%`);
 
+    this.logger.log('calling FlimsRepository.findAndCount');
     const [ flims, count ] = await this.flimsRepository.findAndCount({ where });
     return { flims, count };
   }
 
   async findByTitle(title: string) {
-    console.log(`[${FlimsServiceService.name}] ${this.findByTitle.name} was called with: ${title}`);
+    this.logger.log(`[${FlimsServiceService.name}] ${this.findByTitle.name} was called`);
+
+    this.logger.log('calling FlimsRepository.findOneBy');
     const flim = await this.flimsRepository.findOneBy({ title });
     if (!flim) return null;
     return { flim };
   }
 
   async findAll() {
-    console.log(`[${FlimsServiceService.name}] ${this.findAll.name} was called`);
+    this.logger.log(`[${FlimsServiceService.name}] ${this.findAll.name} was called`);
+
+    this.logger.log('calling FlimsRepository.findAndCount');
     const [ flims, count ] = await this.flimsRepository.findAndCount();
     return { flims, count };
   }
