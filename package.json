@@ -17,7 +17,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/gateway/test/jest-e2e.json"
+    "test:e2e": "jest --config ./apps/gateway/test/jest-e2e.json",
+    "migration:users:generate": "ts-node node_modules/.bin/typeorm migration:generate -d apps/users-service/ormconfig.ts apps/users-service/migrations/",
+    "migration:users:run": "ts-node node_modules/.bin/typeorm migration:run -d apps/users-service/ormconfig.ts",
+    "migration:users:revert": "ts-node node_modules/.bin/typeorm migration:revert -d apps/users-service/ormconfig.ts",
+    "migration:flims:generate": "ts-node node_modules/.bin/typeorm migration:generate -d apps/flims-service/ormconfig.ts apps/flims-service/migrations/",
+    "migration:flims:run": "ts-node node_modules/.bin/typeorm migration:run -d apps/flims-service/ormconfig.ts",
+    "migration:flims:revert": "ts-node node_modules/.bin/typeorm migration:revert -d apps/flims-service/ormconfig.ts"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -32,6 +38,7 @@
     "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "dotenv": "^16.0.3",
     "ioredis": "^5.3.0",
     "joi": "^17.7.1",
     "mysql2": "^3.1.2",

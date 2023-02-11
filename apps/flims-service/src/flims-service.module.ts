@@ -26,7 +26,7 @@ import { FlimsServiceService } from './flims-service.service';
           password: configService.get<string>('database.pass'),
           database: configService.get<string>('database.name'),
           entities: [Flim],
-          synchronize: true,
+          synchronize: false,
         };
       }
     }),

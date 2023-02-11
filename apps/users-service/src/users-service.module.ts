@@ -40,7 +40,7 @@ import { configuration, validationSchema } from './configuration/configuration';
           password: configService.get<string>('database.pass'),
           database: configService.get<string>('database.name'),
           entities: [User],
-          synchronize: true,
+          synchronize: false,
         };
       }
 
