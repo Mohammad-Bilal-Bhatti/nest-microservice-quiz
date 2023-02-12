@@ -14,9 +14,29 @@ describe('UsersServiceController', () => {
     usersServiceController = app.get<UsersServiceController>(UsersServiceController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(usersServiceController.getHello()).toBe('Hello World!');
+  describe('user::login', () => {
+    it('should return access token on successful login', () => {
+      const userLoginInput = {
+        email: 'user@domain.com',
+        password: 'Abcd@1234'
+      };
+      const result = usersServiceController.handleUserLogin(userLoginInput);
+      expect(result).toHaveProperty('accessToken');
+    });
+  });
+
+  describe('user::register', () => {
+    it('user can register into the system', () => {
+      const userRegistrationInput = {
+        email: 'testuser@domain.com',
+        password: 'Abcd@1234',
+        name: 'Test User',
+        age: 18,
+        location: 'system',
+      };
+      const result = usersServiceController.handleUserRegister(userRegistrationInput);
+      expect(result).toHaveProperty('message');
+      expect(result).toHaveProperty('message', 'user registration complete');
     });
   });
 });
