@@ -1,4 +1,4 @@
-import { Body, CacheInterceptor, CacheKey, CacheTTL, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, CacheInterceptor, CacheTTL, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { catchError, concatMap, map } from "rxjs";
 import { Service } from "../shared/available.services";
@@ -40,16 +40,14 @@ export class FlimsController {
   }
 
   @Get('search')
-  @CacheKey('flim::search')
-  @CacheTTL(2)
+  @CacheTTL(60) /* in seconds */
   @UseInterceptors(CacheInterceptor)
   searchFilms(@Query() input: SearchFlimsInput) {
     return this.flimsService.send('flim::search', input);
   }
 
   @Get()
-  @CacheKey('flim::findAll')
-  @CacheTTL(2)
+  @CacheTTL(60) /* in seconds */
   @UseInterceptors(CacheInterceptor)
   getAllFlims() {
     return this.flimsService.send('flim::findAll', {});
