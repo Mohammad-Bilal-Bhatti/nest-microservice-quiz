@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, CacheInterceptor, CacheKey, CacheTTL, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import { catchError, concatMap, defaultIfEmpty, map, tap, throwError } from "rxjs";
+import { catchError, concatMap, map } from "rxjs";
 import { Service } from "../shared/available.services";
 import { JwtAuthGuard } from "../shared/guards/jwt-auth.guard";
 import { AddFlimDto, UpdateFlimDto } from "./dtos/flim.dto";
@@ -40,11 +40,17 @@ export class FlimsController {
   }
 
   @Get('search')
+  @CacheKey('flim::search')
+  @CacheTTL(2)
+  @UseInterceptors(CacheInterceptor)
   searchFilms(@Query() input: SearchFlimsInput) {
     return this.flimsService.send('flim::search', input);
   }
 
   @Get()
+  @CacheKey('flim::findAll')
+  @CacheTTL(2)
+  @UseInterceptors(CacheInterceptor)
   getAllFlims() {
     return this.flimsService.send('flim::findAll', {});
   }
