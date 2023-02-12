@@ -24,7 +24,25 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This is the quiz application to check my ability to work with nestjs.
+
+Mistakenly i typed film as flim so please ignore it ;)
+
+This repository is crafted as monorepo for hosting multiple applications. 
+1. Gateway
+2. Users service
+3. Flims service
+
+### System Overview
+
+- Gateway as name suggested - it is door to our application and handles communication between each microservice.
+- User microservice - is responsible for handing user registration and login
+- Flims microservice - is responsible for handling flims CRUD and search facilities
+- The database used in the following microservices is myqsl database and typeorm is used on top of it.
+- The application used redis as message borker as a middleware to communicate with each microservice.
+- Application is using cache mechanism on GET routes for 60 sec as TTL and behind the scenes used redis to store cache data
+- The flim service is protected by jwt-auth guard
+- Stream based logging is setup in each microservice and gateway - because stram based logging is more flexable to work as compared to file based logging.
 
 ## Installation
 
@@ -32,17 +50,35 @@
 $ npm install
 ```
 
-## Running the app
+## Prerequisites
+
+1. You must have docker running to your system.
 
 ```bash
-# development
-$ npm run start
+# Start database and message broker containers in detatched mode
+$ docker compose up -d
+```
 
-# watch mode
-$ npm run start:dev
+2. you have to make sure you have following databases exists with names
+- users_db
+- flims_db
 
-# production mode
-$ npm run start:prod
+if not try to create it by [adminer](http://localhost:8080) - free an open source sql client
+
+## Running the apps
+
+```bash
+# Run gateway service
+$ nest start gateway
+
+# Run users service
+$ nest start users-service
+
+# Run flims service
+$ nest start flims-service
+
+# If you wanted to store log to file use redirect syntax to achieve it
+$ nest start gateway >> gateway.logs
 ```
 
 ## Test
@@ -57,6 +93,30 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+## Migrations
+
+Migration context
+- users
+- flims
+
+Each migration context is related to each microservice
+
+```bash
+# Run migration
+$ migration:<context>:run
+
+# Revert migration
+$ migration:<context>:revert
+
+# Create migration
+$ migration:<context>:create
+```
+
+## Insomnia Collection
+
+[here](./insomnia.collection.json) is the insomnia collection - import and test ;)
+
 
 ## Support
 
